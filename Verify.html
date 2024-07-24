@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VerityVault Interface</title>
+    <style>
+        /* body {
+            font-family: Arial, sans-serif;
+            background-color: #034F75;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-x: hidden;
+        } */
+        .holder{
+            background-color: #b9dbec;
+            height: 90vh;
+            padding: 0 3% 5% 0;
+            color: #061c33;
+        }
+        header {
+            background-color: #b9dbec;
+            color:#061c33;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 1.0em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 3%;
+            margin-top: 5%;
+        }
+
+        .nav {
+            position: absolute;
+            top: 75%;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .nav-links {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            background: linear-gradient(to bottom, #061c33, #058891);
+            border: 1px solid #fff;
+            border-radius: 5px;
+            text-align: center;
+            width: auto;
+        }
+        .nav-links a {
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            background: linear-gradient(to bottom, #061c33, #058891);
+        }
+        .nav-toggle {
+            cursor: pointer;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: white;
+            font-size: 1.5em;
+        }
+        .nav-toggle .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            background-color: #061c33;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #b9dbec;
+            color: #043947;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            height: 80%;
+            background-color: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .input-box, .output-box {
+            flex: 1;
+            padding: 20px;
+            background-color: #3a3a3a;
+            border-radius: 8px;
+            margin: 10px;
+            overflow-y: scroll;
+        }
+        .input-box {
+            margin-right: 10px;
+            overflow-x: hidden;
+        }
+        .textarea, .output {
+            width: 100%;
+            height: 370px;
+            background-color: transparent;
+            border: none;
+            color: #dcdcdc;
+            resize: none;
+            outline: none;
+
+        }
+        .textarea {
+            font-size: 16px;
+        }
+        .output {
+            font-size: 16px;
+            position: relative; /* Ensure relative positioning for absolute loading indicator */
+        }
+
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 5px solid #ccc;
+            border-top-color: #4a4a4a;
+            animation: spin 1s infinite linear;
+            display: none; /* Initially hidden */
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+        .dropdown {
+            padding: 10px;
+            background-color: #3a3a3a;
+            border: 1px solid #4a4a4a;
+            border-radius: 8px;
+            color: #dcdcdc;
+            font-size: 16px;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: #4a4a4a;
+            border: none;
+            border-radius: 8px;
+            color: #dcdcdc;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #5a5a5a;
+        }
+        .main {
+            display: flex;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="holder"> 
+        <header>
+            <div class="nav">
+                <button class="nav-toggle" onclick="toggleNav()">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </button>
+                <div class="nav-links" id="nav-links">
+                    <a href="/">About</a>
+                    <a href="/verity">Verify</a>
+                    <a href="/#apiEndpoints">API</a>
+                </div>
+            </div>
+        </header> 
+    </div>
+        <div class="container">
+            <div class="header">
+                <select class="dropdown" id="command-dropdown">
+                    <option value="criticalquestions">Critical Questions</option>
+                    <option value="coarsepredict">Broad Fallacies</option>
+                    <option value="finepredict">Fine Fallacies</option>
+                    <option value="explaincoarse">Broad Explained </option>
+                    <option value="explainfine">Fine Explained</option>
+                </select>
+                <button class="button" onclick="submitInput()">Submit</button>
+            </div>
+            <div class="main">
+                <div class="input-box">
+                    <textarea class="textarea" id="input-text" placeholder="Enter your input here..."></textarea>
+                </div>
+                <div class="output-box">
+                    <div class="output" id="output-text">
+                        <div class="loading-indicator"></div> <!-- Loading indicator -->
+                        Output will be displayed here...
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+    
+        <script>
+            async function submitInput() {
+                    const inputText = document.getElementById('input-text').value;
+                    const selectedCommand = document.getElementById('command-dropdown').value;
+                    const outputElement = document.getElementById('output-text');
+                    const loadingIndicator = outputElement.querySelector('.loading-indicator');
+                    const apiEndpoints = {
+                        coarsepredict: 'https://pwuzv2ow40.execute-api.us-east-1.amazonaws.com/prod/coarsepredict',
+                        finepredict: 'https://pwuzv2ow40.execute-api.us-east-1.amazonaws.com/prod/finepredict',
+                        explaincoarse: 'https://pwuzv2ow40.execute-api.us-east-1.amazonaws.com/prod/explaincoarse',
+                        explainfine: 'https://pwuzv2ow40.execute-api.us-east-1.amazonaws.com/prod/explainfine',
+                        criticalquestions: 'https://pwuzv2ow40.execute-api.us-east-1.amazonaws.com/prod/criticalquestions',
+                    };
+
+                    if (!apiEndpoints[selectedCommand]) {
+                        outputElement.innerText = 'Invalid command selected';
+                        loadingIndicator.style.display = 'none'; // Hide loading indicator
+                        return;
+                    }
+
+                    try {
+                        let response;
+                        if (selectedCommand === 'criticalquestions') {
+                            response = await fetch(apiEndpoints[selectedCommand], {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'x-api-key': 'A3USniyO2j7g6eKrJQsgB2LRzvFssbYx1A4tc3SM', 
+
+                                },
+                                body: JSON.stringify({ message: inputText })
+                            });
+                        } else {
+                            response = await fetch(apiEndpoints[selectedCommand], {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'x-api-key': 'A3USniyO2j7g6eKrJQsgB2LRzvFssbYx1A4tc3SM', 
+                                },
+                                body: JSON.stringify({ input: inputText })
+                            });
+                        }
+
+                        if (!response.ok) {
+                            throw new Error(`Error: ${response.statusText}`);
+                        }
+
+                        const result = await response.json();
+                        displayResult(selectedCommand, result, outputElement);
+                    } catch (error) {
+                        console.error('Fetch error:', error);
+                        outputElement.innerText = `Error: ${error.message}`;
+                    }
+
+                }
+
+            
+            function displayResult(command, result, outputElement) {
+                outputElement.innerHTML = ''; // Clear previous content
+                switch (command) {
+                    case 'coarsepredict':
+                        const  prediction = result;
+                        const { predictedClass, classScores } = prediction;
+
+                        // Clear previous content
+                        outputElement.innerHTML = '';
+
+                        // Create elements for displaying the prediction
+                        const predictionHeader = document.createElement('h3');
+                        predictionHeader.textContent = 'Coarse Prediction:';
+                        outputElement.appendChild(predictionHeader);
+
+                        const predictedClassElement = document.createElement('p');
+                        predictedClassElement.textContent = `Predicted Class: ${predictedClass}`;
+                        outputElement.appendChild(predictedClassElement);
+
+                        const classScoresHeader = document.createElement('p');
+                        classScoresHeader.textContent = 'Class Scores:';
+                        outputElement.appendChild(classScoresHeader);
+
+                        // Convert scores to percentages (assuming scores are out of 1) and round off to 2 decimal places
+                        const scoresPercentage = {};
+                        for (let className in classScores) {
+                            scoresPercentage[className] = ((classScores[className]) * 100).toFixed(2); // Convert scores to percentages and round off to 2 decimal places
+                        }
+
+                        // Create a list for displaying class scores
+                        const classScoresList = document.createElement('ul');
+                        for (let className in scoresPercentage) {
+                            const scoreItem = document.createElement('li');
+
+                            // Determine the text color and size based on the score being positive or negative
+                            let textColor = scoresPercentage[className] < 0 ? 'red' : 'green';
+                             // Red for negative, green for positive
+                             let scalingFactor = 0.4; // Adjust this factor to control text size
+                            let textSize = Math.abs(scoresPercentage[className])*scalingFactor; // Text size reflects the magnitude of the score
+
+                            // Apply styles
+                            scoreItem.style.color = textColor;
+                            scoreItem.style.fontSize = `${textSize}px`; // Dynamic font size based on score magnitude
+
+                            scoreItem.textContent = `${className}: ${scoresPercentage[className]}%`; // Display the converted score with 2 decimal places
+
+                            classScoresList.appendChild(scoreItem);
+                        }
+                        outputElement.appendChild(classScoresList);
+                        break;
+
+                        case 'finepredict':
+                            
+                            console.log(result);
+                            console.log(result.prediction);
+                            const predictionDetails = result; 
+                            console.log(predictionDetails);
+                            const predictedClassDetail = predictionDetails.predictedClass;
+                            const classScoreDetails = predictionDetails.classScores;
+                            
+                            // Clear previous content
+                            outputElement.innerHTML = '';
+
+                            // Create elements for displaying the fine prediction
+                            const finePredictionHeader = document.createElement('h3');
+                            finePredictionHeader.textContent = 'Fine Prediction Details:';
+                            outputElement.appendChild(finePredictionHeader);
+
+                            const predictedClassDetailElement = document.createElement('p');
+                            predictedClassDetailElement.textContent = `Predicted Class Detail: ${predictedClassDetail}`;
+                            outputElement.appendChild(predictedClassDetailElement);
+
+                            const classScoreDetailsHeader = document.createElement('p');
+                            classScoreDetailsHeader.textContent = 'Class Score Details:';
+                            outputElement.appendChild(classScoreDetailsHeader);
+
+                            // Convert scores to percentages and prepare for display
+                            const scorePercentages = {};
+                            const scoreDetailsList = document.createElement('ul');
+                            for (let className in classScoreDetails) {
+                                let score = classScoreDetails[className]* 100; // Calculate score as a number
+                                scorePercentages[className] = score.toFixed(2); // Convert to string for display, rounding to 2 decimal places
+                                let textSize = 12 + Math.abs(score) * 0.12; // Example mapping to font size, adjust as needed
+
+                                const scoreDetailItem = document.createElement('li');
+                                scoreDetailItem.textContent = `${className}: ${scorePercentages[className]}%`;
+                                scoreDetailItem.style.color = score < 0 ? 'red' : 'green'; // Color based on score
+                                scoreDetailItem.style.fontSize = `${textSize}px`; // Apply dynamic font size
+
+                                scoreDetailsList.appendChild(scoreDetailItem);
+                            }
+                            outputElement.appendChild(scoreDetailsList);
+                            break;
+
+
+                        case 'explaincoarse':
+                            const { predictedClass: explainCoarseClass, classScores: explainCoarseScores, explanation: coarseExplanation } = result;
+
+                            // Clear previous content
+                            outputElement.innerHTML = '';
+
+                            // Create elements for displaying the prediction
+                            const explainCoarseHeader = document.createElement('h3');
+                            explainCoarseHeader.textContent = 'Coarse Explanation:';
+                            outputElement.appendChild(explainCoarseHeader);
+
+                            const explainCoarseClassElement = document.createElement('p');
+                            explainCoarseClassElement.textContent = `Predicted Class: ${explainCoarseClass}`;
+                            outputElement.appendChild(explainCoarseClassElement);
+
+                            const explainCoarseScoresHeader = document.createElement('p');
+                            explainCoarseScoresHeader.textContent = 'Fallacy Class Scores:';
+                            outputElement.appendChild(explainCoarseScoresHeader);
+
+                            // Create a list for displaying class scores including negative scores
+                            const explainCoarseScoresList = document.createElement('ul');
+                            for (let className in explainCoarseScores) {
+                                const scoreItem = document.createElement('li');
+
+                                let score = (explainCoarseScores[className]) * 100; // Convert score to percentage out of 10
+                                let textColor = score < 0 ? 'red' : 'green'; // Red for negative, green for positive
+                                let textSize = 12 + Math.abs(score) * 0.12; // Text size reflects the magnitude of the score
+
+                                scoreItem.style.color = textColor;
+                                scoreItem.style.fontSize = `${textSize}px`; // Dynamic font size based on score magnitude
+
+                                scoreItem.textContent = `${className}: ${score.toFixed(2)}%`; // Display the score with 2 decimal places
+
+                                explainCoarseScoresList.appendChild(scoreItem);
+                            }
+                            outputElement.appendChild(explainCoarseScoresList);
+
+                            // Create a paragraph for the explanation
+                            const coarseExplanationParagraph = document.createElement('p');
+                            coarseExplanationParagraph.textContent = coarseExplanation;
+                            outputElement.appendChild(coarseExplanationParagraph);
+                            break;
+
+                        case 'explainfine':
+                            const { predictedClass: explainFineClass, classScores: explainFineScores, explanation } = result;
+
+                            // Clear previous content
+                            outputElement.innerHTML = '';
+
+                            // Create elements for displaying the prediction
+                            const explainFineHeader = document.createElement('h3');
+                            explainFineHeader.textContent = 'Fine Explanation:';
+                            outputElement.appendChild(explainFineHeader);
+
+                            const explainFineClassElement = document.createElement('p');
+                            explainFineClassElement.textContent = `Predicted Class: ${explainFineClass}`;
+                            outputElement.appendChild(explainFineClassElement);
+
+                            const explainFineScoresHeader = document.createElement('p');
+                            explainFineScoresHeader.textContent = 'Potential Fallacies:';
+                            outputElement.appendChild(explainFineScoresHeader);
+
+                            // Create a list for displaying class scores with only positive scores
+                            const explainFineScoresList = document.createElement('ul');
+                            for (let className in explainFineScores) {
+                                if (explainFineScores[className] > 0) {
+                                    const scoreItem = document.createElement('li');
+
+                                    let score = (explainFineScores[className]) * 100; // Convert score to percentage out of 10
+                                    let textColor = 'green'; // Green for positive scores
+                                    let textSize = 12 + Math.abs(score) * 0.12; // Text size reflects the magnitude of the score
+
+                                    scoreItem.style.color = textColor;
+                                    scoreItem.style.fontSize = `${textSize}px`; // Dynamic font size based on score magnitude
+
+                                    scoreItem.textContent = `${className}: ${score.toFixed(2)}%`; // Display the score with 2 decimal places
+
+                                    explainFineScoresList.appendChild(scoreItem);
+                                }
+                            }
+                            outputElement.appendChild(explainFineScoresList);
+
+                            // Create a paragraph for the explanation
+                            const explanationParagraph = document.createElement('p');
+                            explanationParagraph.textContent = explanation;
+                            outputElement.appendChild(explanationParagraph);
+                            break;
+
+
+                    case 'criticalquestions':
+                        // Extract content from result
+                        const content = result.analysisResult.message.content;
+
+                        // Split questions into a list
+                        const questions = content.split(/\n\d+\.\s/).filter(q => q.trim() !== '');
+
+                        // Format output for display
+                        const formattedOutput = `
+                        <p>Critical Questions to Ask:</p>
+                        <ul>
+                            ${questions.map(q => `<li>${q}</li>`).join('\n    ')}
+                        </ul>`;
+
+                        // Display formatted output
+                        outputElement.innerHTML = formattedOutput;
+                        break;
+                                    outputElement.innerText = 'Unknown command';
+                            }
+                        }
+        </script>
+
+<script>
+    function toggleNav() {
+        var navLinks = document.getElementById("nav-links");
+        if (navLinks.style.display === "flex") {
+            navLinks.style.display = "none";
+        } else {
+            navLinks.style.display = "flex";
+        }
+    }
+</script>
+
+</body>
+</html>
