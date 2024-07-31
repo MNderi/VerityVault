@@ -1,0 +1,99 @@
+const { InferenceSession, Tensor } = require('onnxruntime-node');
+const path = require('path');
+const axios = require('axios'); // Import axios for making HTTP requests
+
+// Load the model once at startup
+const modelPath = path.join(__dirname, 'model_fine.onnx'); // Constructing the absolute path
+let session;
+
+async function initializeModel() {
+  try {
+    const options = { providers: ['WebAssembly'] }; // Specify provider (optional)
+    session = await InferenceSession.create(modelPath, options);
+    console.log('Model loaded successfully');
+  } catch (error) {
+    console.error('Error loading model:', error);
+  }
+}
+
+// Call initializeModel once during startup
+initializeModel();
+
+function softmax(arr) {
+  const max = Math.max(...arr);
+  const exps = arr.map(x => Math.exp(x - max));
+  const sumExps = exps.reduce((sum, exp) => sum + exp, 0);
+  return exps.map(exp => exp / sumExps);
+}
+
+// Function to preprocess the input and run inference
+async function finePredict(inputText) {
+  try {
+    // Ensure inputText is a string
+    if (typeof inputText !== 'string') {
+      inputText = String(inputText);
+    }
+
+    // Remove full stops from input text
+    inputText = inputText.replace(/\./g, '');
+
+    // Make HTTP POST request to tokenizing endpoint
+    const tokenizingEndpoint = 'https://mydockerrepo-tokenizer.onrender.com/tokenize'; // Adjust URL as needed
+    const response = await axios.post(tokenizingEndpoint, { text: inputText });
+
+    // Ensure response is valid
+    if (!response || !response.data || !response.data.input_ids || !response.data.attention_mask || !response.data.token_type_ids) {
+      throw new Error('Invalid response from tokenizing endpoint');
+    }
+
+    // Extract tokenized inputs from response
+    const { input_ids, attention_mask, token_type_ids } = response.data;
+
+    // Log tokenized inputs for debugging
+    console.log('Tokenized Inputs:', { input_ids, attention_mask, token_type_ids });
+
+    // Ensure the model is loaded
+    if (!session) {
+      throw new Error('Model is not loaded');
+    }
+
+    // Create tensors directly from arrays
+    const inputIdsTensor = new Tensor('int64', input_ids, [1, input_ids.length]);
+    const attentionMaskTensor = new Tensor('int64', attention_mask, [1, attention_mask.length]);
+    const tokenTypeIdsTensor = new Tensor('int64', token_type_ids, [1, token_type_ids.length]);
+
+    // Perform inference
+    const outputs = await session.run({ input_ids: inputIdsTensor, attention_mask: attentionMaskTensor, token_type_ids: tokenTypeIdsTensor });
+
+    // Ensure there is at least one output
+    if (!outputs || !outputs.output) {
+      throw new Error('Model did not return any outputs');
+    }
+
+    // Access the first output tensor (assuming a single output tensor in this example)
+    const outputTensor = Array.from(outputs.output.data);
+    console.log(outputs);
+    const probabilities = softmax(outputTensor);
+
+    const classList = ['faulty generalization', 'false causality', 'circular reasoning', 'ad populum', 'ad hominem', 'fallacy of logic', 'appeal to emotion', 'false dilemma', 'equivocation', 'fallacy of extension', 'fallacy of relevance', 'fallacy of credibility', 'intentional'];
+
+    // Find the index of the maximum value
+    const maxIndex = probabilities.indexOf(Math.max(...probabilities));
+
+    // Determine the predicted class
+    const predictedClass = classList[maxIndex];
+
+    // Prepare class scores (probabilities for each class)
+    const classScores = classList.reduce((acc, className, index) => {
+      acc[className] = probabilities[index];
+      return acc;
+    }, {});
+
+    return { predictedClass, classScores };
+  } catch (error) {
+    console.error('Error during tokenization or inference:', error);
+    throw error; // Rethrow the error to propagate it upwards
+  }
+}
+
+module.exports = { finePredict };
